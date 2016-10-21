@@ -1,5 +1,6 @@
 package org.nlab.smtp.transport.connection;
 
+import com.sun.mail.smtp.SMTPTransport;
 import org.nlab.smtp.exception.MailSendException;
 import org.nlab.smtp.pool.ObjectPoolAware;
 import org.nlab.smtp.pool.SmtpConnectionPool;
@@ -20,6 +21,7 @@ public class DefaultClosableSmtpConnection implements ClosableSmtpConnection, Ob
 
     private final Transport delegate;
     private SmtpConnectionPool objectPool;
+    private boolean useRset;
 
     private final List<TransportListener> transportListeners = new ArrayList<>();
 
@@ -62,6 +64,10 @@ public class DefaultClosableSmtpConnection implements ClosableSmtpConnection, Ob
     }
 
 
+    public void setRset(boolean b) {
+        useRset = b;
+    }
+
     @Override
     public void close() throws Exception {
         objectPool.returnObject(this);
@@ -99,6 +105,13 @@ public class DefaultClosableSmtpConnection implements ClosableSmtpConnection, Ob
             // Preserve explicitly specified message id...
             mimeMessage.setHeader(HEADER_MESSAGE_ID, messageId);
         }
+
+        if (useRset) {
+            //Request to use RSET instead of NOOP
+            SMTPTransport smtpDelegate = (SMTPTransport)delegate;
+            smtpDelegate.setUseRset(useRset);
+        }
+
         delegate.sendMessage(mimeMessage, recipients);
     }
 

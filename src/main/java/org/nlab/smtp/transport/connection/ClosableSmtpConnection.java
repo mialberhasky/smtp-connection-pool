@@ -74,4 +74,10 @@ public interface ClosableSmtpConnection extends AutoCloseable {
      * @return the {@link Session}
      */
     Session getSession();
+
+    /**
+     *
+     * Set using RSET instead of NOOP
+     */
+    void setRset(boolean b);
 }
